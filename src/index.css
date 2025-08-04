@@ -1,0 +1,172 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* VitaSync Design System - Healthcare-inspired, warm and trustworthy */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    /* VitaSync Color Palette */
+    --background: 214 32% 97%; /* #F7F9FC - off-white */
+    --foreground: 220 39% 11%; /* #1F2937 - charcoal text */
+
+    --card: 0 0% 100%; /* pure white cards */
+    --card-foreground: 220 39% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 39% 11%;
+
+    --primary: 340 68% 44%; /* #C2185B - deep rose/red accent */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 214 32% 91%; /* lighter version of background */
+    --secondary-foreground: 220 39% 11%;
+
+    --muted: 214 32% 91%;
+    --muted-foreground: 220 13% 46%;
+
+    --accent: 340 68% 44%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 71% 45%; /* for positive indicators */
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%; /* for caution/expiry warnings */
+    --warning-foreground: 220 39% 11%;
+
+    --border: 214 32% 86%;
+    --input: 214 32% 86%;
+    --ring: 340 68% 44%;
+
+    --radius: 1rem; /* 2xl rounded corners */
+    
+    /* Healthcare-specific colors */
+    --blood-o-pos: 0 84% 60%; /* O+ - universal donor */
+    --blood-o-neg: 0 100% 35%; /* O- - critical universal */
+    --blood-a-pos: 217 91% 60%; /* A+ */
+    --blood-a-neg: 217 91% 40%; /* A- */
+    --blood-b-pos: 271 91% 60%; /* B+ */
+    --blood-b-neg: 271 91% 40%; /* B- */
+    --blood-ab-pos: 142 71% 45%; /* AB+ */
+    --blood-ab-neg: 142 71% 30%; /* AB- */
+
+    /* Shadows and animations */
+    --shadow-soft: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-medium: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    /* Dark mode for VitaSync */
+    --background: 220 39% 8%; /* dark charcoal */
+    --foreground: 214 32% 97%; /* light text */
+
+    --card: 220 39% 11%; /* darker cards */
+    --card-foreground: 214 32% 97%;
+
+    --popover: 220 39% 11%;
+    --popover-foreground: 214 32% 97%;
+
+    --primary: 340 68% 54%; /* brighter rose in dark mode */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 39% 15%;
+    --secondary-foreground: 214 32% 97%;
+
+    --muted: 220 39% 15%;
+    --muted-foreground: 220 13% 60%;
+
+    --accent: 340 68% 54%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 70%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 71% 55%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 60%;
+    --warning-foreground: 220 39% 11%;
+
+    --border: 220 39% 18%;
+    --input: 220 39% 18%;
+    --ring: 340 68% 54%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    line-height: 1.6;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+    line-height: 1.2;
+  }
+}
+
+@layer components {
+  /* Blood type color utilities */
+  .blood-type-o-pos { @apply bg-red-500 text-white; }
+  .blood-type-o-neg { @apply bg-red-700 text-white; }
+  .blood-type-a-pos { @apply bg-blue-500 text-white; }
+  .blood-type-a-neg { @apply bg-blue-700 text-white; }
+  .blood-type-b-pos { @apply bg-purple-500 text-white; }
+  .blood-type-b-neg { @apply bg-purple-700 text-white; }
+  .blood-type-ab-pos { @apply bg-green-500 text-white; }
+  .blood-type-ab-neg { @apply bg-green-700 text-white; }
+
+  /* Custom transitions */
+  .transition-smooth {
+    transition: var(--transition-smooth);
+  }
+
+  /* Hover effects */
+  .hover-lift {
+    @apply transition-smooth hover:scale-105 hover:-translate-y-1;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .hover-lift:hover {
+    box-shadow: var(--shadow-medium);
+  }
+
+  /* Loading skeleton */
+  .skeleton {
+    @apply animate-pulse bg-muted rounded-2xl;
+  }
+}
