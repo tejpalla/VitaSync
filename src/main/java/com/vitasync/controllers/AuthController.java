@@ -60,7 +60,8 @@ public class AuthController {
         newUser.setPhone(request.getPhone());
         newUser.setBloodType(request.getBloodType() != null ? 
             BloodType.valueOf(request.getBloodType()) : null);
-        newUser.setRole(UserRole.DONOR); // Default role for new users
+        newUser.setRole(request.getRole() != null ? 
+            UserRole.valueOf(request.getRole()) : UserRole.DONOR);
         
         // Set default location if not provided (required fields)
         newUser.setLongitude(request.getLongitude() != null ? request.getLongitude() : 0.0);
