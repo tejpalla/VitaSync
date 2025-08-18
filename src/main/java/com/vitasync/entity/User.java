@@ -51,19 +51,16 @@ public class User {
     @Size(min = 8, message = "Password must be at least 8 characters long")
     private String password;
 
-    @NotNull(message = "Blood type is required")
     @Enumerated(EnumType.STRING)
-    private BloodType bloodType;
+    private BloodType bloodType; // Optional during registration
 
     @NotNull(message = "Role is required")
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
-    @NotNull(message = "Longitude is required")
-    private Double longitude;
+    private Double longitude; // Optional - can be set later
 
-    @NotNull(message = "Latitude is required")
-    private Double latitude;
+    private Double latitude; // Optional - can be set later
 
     private Boolean isAvailable = true;
 

@@ -5,7 +5,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import com.vitasync.entity.User;
-import com.vitasync.services.UserService;
+import com.vitasync.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserSecurity {
 
-    private final UserService userService;
+    private final UserRepository userRepository;
 
     public boolean isCurrentUser(Long userId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -22,7 +22,8 @@ public class UserSecurity {
         }
 
         String currentUserEmail = authentication.getName();
-        User user = userService.getUserByEmail(currentUserEmail);
+        User user = userRepository.findByEmail(currentUserEmail)
+            .orElse(null);
         
         return user != null && user.getId().equals(userId);
     }

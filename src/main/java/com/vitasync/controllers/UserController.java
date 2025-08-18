@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.vitasync.entity.User;
-import com.vitasync.services.UserService;
+import com.vitasync.repository.UserRepository;
 
 import jakarta.validation.Valid;
 
@@ -28,22 +28,23 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequestMapping("/api/users")
 public class UserController {
     
-    private final UserService userService;
+    private final UserRepository userRepository;
 
-    public UserController(UserService userService) {
-        this.userService = userService;
+    public UserController(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     @GetMapping("/getall")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<User>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+        return ResponseEntity.ok(userRepository.findAll());
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or @userSecurity.isCurrentUser(#id)")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        return ResponseEntity.ok(userService.getUserById(id));
+        return ResponseEntity.ok(userRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("User not found")));
     }
 
     @PutMapping("/{id}")
@@ -53,20 +54,31 @@ public class UserController {
             @Valid @RequestBody User userDetails,
             @AuthenticationPrincipal UserDetails currentUser) {
         
+        User existingUser = userRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+            
         if (!currentUser.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
             // Non-admin users can't change their role
-            User existingUser = userService.getUserById(id);
             userDetails.setRole(existingUser.getRole());
         }
         
-        return ResponseEntity.ok(userService.updateUser(id, userDetails));
+        existingUser.setEmail(userDetails.getEmail());
+        existingUser.setPhone(userDetails.getPhone());
+        existingUser.setBloodType(userDetails.getBloodType());
+        existingUser.setLongitude(userDetails.getLongitude());
+        existingUser.setLatitude(userDetails.getLatitude());
+        if (userDetails.getRole() != null) {
+            existingUser.setRole(userDetails.getRole());
+        }
+        
+        return ResponseEntity.ok(userRepository.save(existingUser));
     }
 
     @PostMapping("/delete/{id}")
     @PreAuthorize("hasRole('ADMIN') or @userSecurity.isCurrentUser(#id)")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
+        userRepository.deleteById(id);
         return ResponseEntity.ok().build();
     }
     
