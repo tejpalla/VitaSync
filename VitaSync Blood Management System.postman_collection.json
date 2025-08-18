@@ -1,0 +1,80 @@
+{
+	"info": {
+		"_postman_id": "7c9e1158-c936-4b65-93b2-9872ac610b47",
+		"name": "VitaSync Blood Management System",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "30795891"
+	},
+	"item": [
+		{
+			"name": "Sign-in",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"email\": \"newuser123_4@example.com\",\r\n  \"phone\": \"+701234567340\",\r\n  \"password\": \"SecurePass123\",\r\n  \"bloodType\": \"O_POSITIVE\",\r\n  \"role\": \"DONOR\",\r\n  \"longitude\": 8.6821,\r\n  \"latitude\": 50.1109\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8080/api/auth/register"
+			},
+			"response": []
+		},
+		{
+			"name": "Login",
+			"request": {
+				"auth": {
+					"type": "inherit",
+					"inherit": {}
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"newuser123_4@example.com\",\r\n    \"password\": \"SecurePass123\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8080/api/auth/login"
+			},
+			"response": []
+		},
+		{
+			"name": "GetUserById",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJuZXd1c2VyMTIzXzRAZXhhbXBsZS5jb20iLCJpYXQiOjE3NTU1MzcwMzIsImV4cCI6MTc1NTYyMzQzMn0.SdGl7gWj_fFJzjpsdYQoySIpcJWjlct6Pef2lE_0RecGrHHIPZpvV4fPLcn1eMp8",
+						"type": "text"
+					}
+				],
+				"url": "http://localhost:8080/api/users/6"
+			},
+			"response": []
+		},
+		{
+			"name": "GetAllUsers",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJuZXdBZG1pbl8xMjNAZXhhbXBsZS5jb20iLCJpYXQiOjE3NTU1Mzc1NzIsImV4cCI6MTc1NTYyMzk3Mn0.H--njCQTAmtvaw8K3PjDBU5Cbh_i_mMwCZb5Z7C2Z9ziWK6xykJnpvf7Pzlp77uJ",
+						"type": "text"
+					}
+				],
+				"url": "http://localhost:8080/api/users/getall"
+			},
+			"response": []
+		}
+	]
+}
