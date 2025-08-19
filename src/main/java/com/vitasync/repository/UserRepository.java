@@ -1,27 +1,34 @@
 package com.vitasync.repository;
 
-import java.util.Optional;
 import com.vitasync.entity.User;
+import com.vitasync.enums.BloodType;
+import com.vitasync.enums.UserRole;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
-@Repository
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
 public interface UserRepository extends JpaRepository<User, Long> {
-
-    /**
-     * Find a user by their email address.
-     *
-     * @param email the email address of the user
-     * @return Optional containing the user with the specified email, or empty Optional if no user found
-     */
-    Optional<User> findByEmail(String email);
-
-    /**
-     * Check if a user exists by their email address.
-     *
-     * @param email the email address to check
-     * @return true if a user with the specified email exists, false otherwise
-     */
-    Optional<User> findByPhone(String phone);
     
+    Optional<User> findByEmail(String email);
+    
+    boolean existsByEmail(String email);
+    
+    List<User> findByRoleAndIsAvailableAndBloodTypeIn(
+        UserRole role, Boolean isAvailable, Set<BloodType> bloodTypes);
+    
+    @Query("SELECT u FROM User u WHERE u.role = 'DONOR' AND u.isAvailable = true AND u.bloodType IN :bloodTypes")
+    List<User> findAvailableDonorsByBloodTypes(@Param("bloodTypes") Set<BloodType> bloodTypes);
+    
+    @Query("SELECT COUNT(u) FROM User u WHERE u.role = :role")
+    Long countByRole(@Param("role") UserRole role);
+    
+    @Query("SELECT COUNT(u) FROM User u WHERE u.role = :role AND u.isAvailable = :isAvailable")
+    Long countByRoleAndIsAvailable(@Param("role") UserRole role, @Param("isAvailable") Boolean isAvailable);
+    
+    @Query("SELECT u.bloodType, COUNT(u) FROM User u WHERE u.role = 'DONOR' GROUP BY u.bloodType")
+    List<Object[]> countDonorsByBloodType();
 }

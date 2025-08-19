@@ -39,6 +39,9 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Name is required")
+    private String name; // NEW FIELD - SAFE TO ADD
+
     @NotBlank(message = "Email is required")
     @Email(message = "Please provide a valid email address")
     private String email;
@@ -50,6 +53,12 @@ public class User {
     @NotBlank(message = "Password is required")
     @Size(min = 8, message = "Password must be at least 8 characters long")
     private String password;
+
+    // NEW FIELD - SAFE TO ADD
+    private String city; // Optional field for location matching
+
+    // NEW FIELD - SAFE TO ADD  
+    private String address; // Optional field for detailed location
 
     @Enumerated(EnumType.STRING)
     private BloodType bloodType; // Optional during registration
