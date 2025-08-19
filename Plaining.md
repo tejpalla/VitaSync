@@ -1,1174 +1,450 @@
-Collecting workspace informationLooking at your repository structure and comparing it with your Plaining.md plan, I can see you've made good progress on the authentication and user management foundation. Let me provide a comprehensive step-by-step guide to complete the VitaSync Blood Bank Management System by tomorrow or day after tomorrow evening.
+# Simplified VitaSync - 2-Day Development Plan
 
-## 🧠 Current State Analysis
+## 🎯 Reality Check: What We're Building
+A **single Spring Boot application** with basic CRUD operations for blood donation management. No microservices, no Kafka, no fancy reactive programming - just a working application that can be deployed to Azure.
 
-**✅ What's Already Done:**
-- Basic Spring Boot setup with security configuration
-- User authentication (JWT-based)
-- User registration and management
-- Basic entities and enums structure
-- OpenAPI documentation setup
+---
 
-**❌ What's Missing (Critical for MVP):**
-- Core business entities (TransfusionRequest, DonationResponse, BloodBank)
-- Core business logic controllers and services
-- Matching algorithms
-- Dashboard APIs
-- Database configuration for production
-- Docker setup
+## 🔌 Comprehensive API Design
 
-## 🎯 Complete Implementation Roadmap
+### **User Management APIs**
 
-### **Day 1 (Today/Tomorrow): Complete Core Backend**
-
-#### **Morning Session (4 hours)**
-
-**1. Create Missing Entity Models (1 hour)**
-
-````java
-package com.vitasync.entity;
-
-import com.vitasync.enums.BloodType;
-import com.vitasync.enums.RequestStatus;
-import com.vitasync.enums.Urgency;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-
-import java.time.LocalDateTime;
-
-@Entity
-@Table(name = "transfusion_requests")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class TransfusionRequest {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "patient_id")
-    private User patient;
-
-    @NotBlank
-    @Column(name = "patient_name")
-    private String patientName;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "blood_type", nullable = false)
-    private BloodType bloodType;
-
-    @Positive
-    @Column(name = "units_required")
-    private Integer unitsRequired;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "urgency", nullable = false)
-    private Urgency urgency;
-
-    @NotBlank
-    @Column(name = "hospital_name")
-    private String hospitalName;
-
-    @Column(name = "hospital_address")
-    private String hospitalAddress;
-
-    @Pattern(regexp = "\\+?[0-9]{10,15}")
-    @Column(name = "contact_number")
-    private String contactNumber;
-
-    @Column(name = "medical_reason", length = 500)
-    private String medicalReason;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private RequestStatus status = RequestStatus.PENDING;
-
-    @Future
-    @Column(name = "required_by_date")
-    private LocalDateTime requiredByDate;
-
-    @Column(name = "created_at")
-    private LocalDateTime createdAt = LocalDateTime.now();
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt = LocalDateTime.now();
-
-    @PreUpdate
-    public void preUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
+#### **POST /api/users/register**
+```json
+Request:
+{
+  "name": "John Doe",
+  "email": "john@email.com",
+  "phone": "+1234567890",
+  "bloodType": "O_POSITIVE",
+  "role": "DONOR",
+  "address": "123 Main St",
+  "city": "Mumbai",
+  "state": "Maharashtra"
 }
-````
 
-````java
-package com.vitasync.entity;
-
-import com.vitasync.enums.DonationStatus;
-import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-
-import java.time.LocalDateTime;
-
-@Entity
-@Table(name = "donation_responses")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class DonationResponse {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "donor_id", nullable = false)
-    private User donor;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "request_id", nullable = false)
-    private TransfusionRequest request;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private DonationStatus status;
-
-    @Column(name = "donor_notes", length = 500)
-    private String donorNotes;
-
-    @Column(name = "scheduled_date")
-    private LocalDateTime scheduledDate;
-
-    @Column(name = "donation_date")
-    private LocalDateTime donationDate;
-
-    @Column(name = "created_at")
-    private LocalDateTime createdAt = LocalDateTime.now();
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt = LocalDateTime.now();
-
-    @PreUpdate
-    public void preUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
+Response: 201 Created
+{
+  "id": 1,
+  "name": "John Doe",
+  "email": "john@email.com",
+  "bloodType": "O_POSITIVE",
+  "role": "DONOR",
+  "isAvailable": true,
+  "createdAt": "2025-08-18T10:30:00Z"
 }
-````
+```
 
-````java
-package com.vitasync.entity;
-
-import com.vitasync.enums.BloodType;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-
-import java.util.Set;
-
-@Entity
-@Table(name = "blood_banks")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class BloodBank {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @NotBlank
-    @Column(name = "name", nullable = false)
-    private String name;
-
-    @NotBlank
-    @Column(name = "address", nullable = false)
-    private String address;
-
-    @Column(name = "phone")
-    private String phone;
-
-    @ElementCollection(targetClass = BloodType.class)
-    @Enumerated(EnumType.STRING)
-    @CollectionTable(name = "blood_bank_available_types")
-    @Column(name = "blood_type")
-    private Set<BloodType> availableBloodTypes;
-
-    @Column(name = "operating_hours")
-    private String operatingHours;
-
-    @Column(name = "latitude")
-    private Double latitude;
-
-    @Column(name = "longitude")
-    private Double longitude;
+#### **GET /api/users/donors?bloodType=O_POSITIVE&city=Mumbai&available=true**
+```json
+Response: 200 OK
+{
+  "content": [
+    {
+      "id": 1,
+      "name": "John Doe",
+      "bloodType": "O_POSITIVE",
+      "city": "Mumbai",
+      "isAvailable": true,
+      "lastDonationDate": "2025-06-15",
+      "phone": "+1234567890"
+    }
+  ],
+  "totalElements": 25,
+  "totalPages": 3
 }
-````
+```
 
-**2. Create DTOs for Requests/Responses (30 minutes)**
+### **Transfusion Request APIs**
 
-````java
-package com.vitasync.dto;
-
-import com.vitasync.enums.BloodType;
-import com.vitasync.enums.RequestStatus;
-import com.vitasync.enums.Urgency;
-import jakarta.validation.constraints.*;
-import lombok.Data;
-
-import java.time.LocalDateTime;
-
-@Data
-public class TransfusionRequestDto {
-    private Long id;
-    
-    @NotBlank(message = "Patient name is required")
-    private String patientName;
-    
-    @NotNull(message = "Blood type is required")
-    private BloodType bloodType;
-    
-    @Positive(message = "Units required must be positive")
-    private Integer unitsRequired;
-    
-    @NotNull(message = "Urgency is required")
-    private Urgency urgency;
-    
-    @NotBlank(message = "Hospital name is required")
-    private String hospitalName;
-    
-    private String hospitalAddress;
-    
-    @Pattern(regexp = "\\+?[0-9]{10,15}", message = "Invalid contact number")
-    private String contactNumber;
-    
-    private String medicalReason;
-    
-    private RequestStatus status;
-    
-    @Future(message = "Required date must be in the future")
-    private LocalDateTime requiredByDate;
-    
-    private LocalDateTime createdAt;
-    private Integer responseCount;
-    private Integer matchingDonorsCount;
+#### **POST /api/transfusion-requests**
+```json
+Request:
+{
+  "patientName": "Jane Smith",
+  "bloodType": "O_POSITIVE",
+  "unitsRequired": 2,
+  "urgency": "HIGH",
+  "hospitalName": "Apollo Hospital",
+  "hospitalAddress": "Sector 26, Noida",
+  "contactNumber": "+9876543210",
+  "medicalReason": "Surgery complications",
+  "requiredByDate": "2025-08-20T18:00:00Z"
 }
-````
 
-````java
-package com.vitasync.dto;
-
-import com.vitasync.enums.DonationStatus;
-import jakarta.validation.constraints.NotNull;
-import lombok.Data;
-
-import java.time.LocalDateTime;
-
-@Data
-public class DonationResponseDto {
-    private Long id;
-    
-    @NotNull(message = "Donor ID is required")
-    private Long donorId;
-    
-    private String donorName;
-    
-    @NotNull(message = "Request ID is required")
-    private Long requestId;
-    
-    @NotNull(message = "Status is required")
-    private DonationStatus status;
-    
-    private String donorNotes;
-    private LocalDateTime scheduledDate;
-    private LocalDateTime donationDate;
-    private LocalDateTime createdAt;
+Response: 201 Created
+{
+  "id": 101,
+  "patientName": "Jane Smith",
+  "bloodType": "O_POSITIVE",
+  "urgency": "HIGH",
+  "status": "PENDING",
+  "createdAt": "2025-08-18T10:30:00Z",
+  "matchingDonorsCount": 5
 }
-````
+```
 
-**3. Create Repositories (15 minutes)**
-
-````java
-package com.vitasync.repository;
-
-import com.vitasync.entity.TransfusionRequest;
-import com.vitasync.enums.BloodType;
-import com.vitasync.enums.RequestStatus;
-import com.vitasync.enums.Urgency;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-
-import java.time.LocalDateTime;
-import java.util.List;
-
-public interface TransfusionRequestRepository extends JpaRepository<TransfusionRequest, Long> {
-    
-    Page<TransfusionRequest> findByStatusAndUrgencyAndBloodType(
-        RequestStatus status, Urgency urgency, BloodType bloodType, Pageable pageable);
-    
-    Page<TransfusionRequest> findByStatus(RequestStatus status, Pageable pageable);
-    
-    Page<TransfusionRequest> findByBloodType(BloodType bloodType, Pageable pageable);
-    
-    List<TransfusionRequest> findByPatientId(Long patientId);
-    
-    @Query("SELECT tr FROM TransfusionRequest tr WHERE tr.urgency IN ('HIGH', 'CRITICAL') AND tr.status = 'PENDING'")
-    List<TransfusionRequest> findUrgentRequests();
-    
-    @Query("SELECT COUNT(tr) FROM TransfusionRequest tr WHERE tr.status = :status")
-    Long countByStatus(@Param("status") RequestStatus status);
-    
-    @Query("SELECT tr FROM TransfusionRequest tr WHERE tr.requiredByDate < :dateTime AND tr.status = 'PENDING'")
-    List<TransfusionRequest> findOverdueRequests(@Param("dateTime") LocalDateTime dateTime);
+#### **GET /api/transfusion-requests?status=PENDING&urgency=HIGH&bloodType=O_POSITIVE**
+```json
+Response: 200 OK
+{
+  "content": [
+    {
+      "id": 101,
+      "patientName": "Jane Smith",
+      "bloodType": "O_POSITIVE",
+      "unitsRequired": 2,
+      "urgency": "HIGH",
+      "hospitalName": "Apollo Hospital",
+      "status": "PENDING",
+      "requiredByDate": "2025-08-20T18:00:00Z",
+      "createdAt": "2025-08-18T10:30:00Z",
+      "responseCount": 3
+    }
+  ]
 }
-````
+```
 
-````java
-package com.vitasync.repository;
+### **Donation Response APIs**
 
-import com.vitasync.entity.DonationResponse;
-import com.vitasync.enums.DonationStatus;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-
-import java.util.List;
-
-public interface DonationResponseRepository extends JpaRepository<DonationResponse, Long> {
-    
-    List<DonationResponse> findByRequestId(Long requestId);
-    
-    List<DonationResponse> findByDonorId(Long donorId);
-    
-    List<DonationResponse> findByRequestIdAndStatus(Long requestId, DonationStatus status);
-    
-    @Query("SELECT COUNT(dr) FROM DonationResponse dr WHERE dr.request.id = :requestId")
-    Integer countResponsesByRequestId(@Param("requestId") Long requestId);
-    
-    @Query("SELECT COUNT(dr) FROM DonationResponse dr WHERE dr.status = 'COMPLETED'")
-    Long countSuccessfulDonations();
+#### **POST /api/donation-responses**
+```json
+Request:
+{
+  "donorId": 1,
+  "requestId": 101,
+  "status": "INTERESTED",
+  "donorNotes": "Available this evening",
+  "scheduledDate": "2025-08-19T14:00:00Z"
 }
-````
 
-````java
-package com.vitasync.repository;
-
-import com.vitasync.entity.BloodBank;
-import com.vitasync.enums.BloodType;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-
-import java.util.List;
-
-public interface BloodBankRepository extends JpaRepository<BloodBank, Long> {
-    
-    @Query("SELECT bb FROM BloodBank bb JOIN bb.availableBloodTypes bt WHERE bt = :bloodType")
-    List<BloodBank> findByAvailableBloodType(@Param("bloodType") BloodType bloodType);
-    
-    @Query(value = "SELECT * FROM blood_banks WHERE " +
-           "(6371 * acos(cos(radians(:lat)) * cos(radians(latitude)) * " +
-           "cos(radians(longitude) - radians(:lng)) + sin(radians(:lat)) * " +
-           "sin(radians(latitude)))) < :radius", nativeQuery = true)
-    List<BloodBank> findNearbyBloodBanks(
-        @Param("lat") Double latitude, 
-        @Param("lng") Double longitude, 
-        @Param("radius") Double radius);
+Response: 201 Created
+{
+  "id": 501,
+  "donorId": 1,
+  "donorName": "John Doe",
+  "requestId": 101,
+  "status": "INTERESTED",
+  "scheduledDate": "2025-08-19T14:00:00Z",
+  "createdAt": "2025-08-18T10:30:00Z"
 }
-````
+```
 
-#### **Afternoon Session (4 hours)**
+### **Matching APIs**
 
-**4. Create Core Services (2 hours)**
-
-````java
-package com.vitasync.services;
-
-import com.vitasync.dto.TransfusionRequestDto;
-import com.vitasync.entity.TransfusionRequest;
-import com.vitasync.entity.User;
-import com.vitasync.enums.BloodType;
-import com.vitasync.enums.RequestStatus;
-import com.vitasync.enums.Urgency;
-import com.vitasync.repository.TransfusionRequestRepository;
-import com.vitasync.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.List;
-
-@Service
-@RequiredArgsConstructor
-@Transactional
-public class TransfusionRequestService {
-    
-    private final TransfusionRequestRepository requestRepository;
-    private final UserRepository userRepository;
-    private final MatchingService matchingService;
-
-    public TransfusionRequestDto createRequest(TransfusionRequestDto dto, Long patientId) {
-        User patient = userRepository.findById(patientId)
-            .orElseThrow(() -> new RuntimeException("Patient not found"));
-
-        TransfusionRequest request = new TransfusionRequest();
-        request.setPatient(patient);
-        request.setPatientName(dto.getPatientName());
-        request.setBloodType(dto.getBloodType());
-        request.setUnitsRequired(dto.getUnitsRequired());
-        request.setUrgency(dto.getUrgency());
-        request.setHospitalName(dto.getHospitalName());
-        request.setHospitalAddress(dto.getHospitalAddress());
-        request.setContactNumber(dto.getContactNumber());
-        request.setMedicalReason(dto.getMedicalReason());
-        request.setRequiredByDate(dto.getRequiredByDate());
-        request.setStatus(RequestStatus.PENDING);
-
-        TransfusionRequest saved = requestRepository.save(request);
-        
-        // Auto-match with donors
-        matchingService.autoMatchDonors(saved.getId());
-        
-        return convertToDto(saved);
+#### **GET /api/matching/donors-for-request/101**
+```json
+Response: 200 OK
+{
+  "requestId": 101,
+  "matchingDonors": [
+    {
+      "donorId": 1,
+      "name": "John Doe",
+      "bloodType": "O_POSITIVE",
+      "city": "Mumbai",
+      "lastDonationDate": "2025-06-15",
+      "distance": "5.2 km",
+      "isAvailable": true,
+      "matchScore": 95
     }
-
-    public Page<TransfusionRequestDto> getRequests(
-            RequestStatus status, Urgency urgency, BloodType bloodType, Pageable pageable) {
-        
-        Page<TransfusionRequest> requests;
-        
-        if (status != null && urgency != null && bloodType != null) {
-            requests = requestRepository.findByStatusAndUrgencyAndBloodType(status, urgency, bloodType, pageable);
-        } else if (status != null) {
-            requests = requestRepository.findByStatus(status, pageable);
-        } else if (bloodType != null) {
-            requests = requestRepository.findByBloodType(bloodType, pageable);
-        } else {
-            requests = requestRepository.findAll(pageable);
-        }
-        
-        return requests.map(this::convertToDto);
-    }
-
-    public TransfusionRequestDto getRequestById(Long id) {
-        TransfusionRequest request = requestRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Request not found"));
-        return convertToDto(request);
-    }
-
-    public List<TransfusionRequestDto> getUrgentRequests() {
-        return requestRepository.findUrgentRequests().stream()
-            .map(this::convertToDto)
-            .toList();
-    }
-
-    public TransfusionRequestDto updateRequestStatus(Long id, RequestStatus status) {
-        TransfusionRequest request = requestRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Request not found"));
-        
-        request.setStatus(status);
-        request.setUpdatedAt(LocalDateTime.now());
-        
-        return convertToDto(requestRepository.save(request));
-    }
-
-    private TransfusionRequestDto convertToDto(TransfusionRequest request) {
-        TransfusionRequestDto dto = new TransfusionRequestDto();
-        dto.setId(request.getId());
-        dto.setPatientName(request.getPatientName());
-        dto.setBloodType(request.getBloodType());
-        dto.setUnitsRequired(request.getUnitsRequired());
-        dto.setUrgency(request.getUrgency());
-        dto.setHospitalName(request.getHospitalName());
-        dto.setHospitalAddress(request.getHospitalAddress());
-        dto.setContactNumber(request.getContactNumber());
-        dto.setMedicalReason(request.getMedicalReason());
-        dto.setStatus(request.getStatus());
-        dto.setRequiredByDate(request.getRequiredByDate());
-        dto.setCreatedAt(request.getCreatedAt());
-        return dto;
-    }
+  ],
+  "totalMatches": 8
 }
-````
+```
 
-````java
-package com.vitasync.services;
-
-import com.vitasync.dto.DonationResponseDto;
-import com.vitasync.entity.DonationResponse;
-import com.vitasync.entity.TransfusionRequest;
-import com.vitasync.entity.User;
-import com.vitasync.enums.DonationStatus;
-import com.vitasync.repository.DonationResponseRepository;
-import com.vitasync.repository.TransfusionRequestRepository;
-import com.vitasync.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.List;
-
-@Service
-@RequiredArgsConstructor
-@Transactional
-public class DonationResponseService {
-    
-    private final DonationResponseRepository responseRepository;
-    private final UserRepository userRepository;
-    private final TransfusionRequestRepository requestRepository;
-
-    public DonationResponseDto createResponse(DonationResponseDto dto) {
-        User donor = userRepository.findById(dto.getDonorId())
-            .orElseThrow(() -> new RuntimeException("Donor not found"));
-        
-        TransfusionRequest request = requestRepository.findById(dto.getRequestId())
-            .orElseThrow(() -> new RuntimeException("Request not found"));
-
-        DonationResponse response = new DonationResponse();
-        response.setDonor(donor);
-        response.setRequest(request);
-        response.setStatus(dto.getStatus());
-        response.setDonorNotes(dto.getDonorNotes());
-        response.setScheduledDate(dto.getScheduledDate());
-
-        DonationResponse saved = responseRepository.save(response);
-        return convertToDto(saved);
-    }
-
-    public List<DonationResponseDto> getResponsesByRequest(Long requestId) {
-        return responseRepository.findByRequestId(requestId).stream()
-            .map(this::convertToDto)
-            .toList();
-    }
-
-    public List<DonationResponseDto> getResponsesByDonor(Long donorId) {
-        return responseRepository.findByDonorId(donorId).stream()
-            .map(this::convertToDto)
-            .toList();
-    }
-
-    public DonationResponseDto updateStatus(Long responseId, DonationStatus status) {
-        DonationResponse response = responseRepository.findById(responseId)
-            .orElseThrow(() -> new RuntimeException("Response not found"));
-        
-        response.setStatus(status);
-        response.setUpdatedAt(LocalDateTime.now());
-        
-        if (status == DonationStatus.COMPLETED) {
-            response.setDonationDate(LocalDateTime.now());
-        }
-        
-        return convertToDto(responseRepository.save(response));
-    }
-
-    private DonationResponseDto convertToDto(DonationResponse response) {
-        DonationResponseDto dto = new DonationResponseDto();
-        dto.setId(response.getId());
-        dto.setDonorId(response.getDonor().getId());
-        dto.setDonorName(response.getDonor().getName());
-        dto.setRequestId(response.getRequest().getId());
-        dto.setStatus(response.getStatus());
-        dto.setDonorNotes(response.getDonorNotes());
-        dto.setScheduledDate(response.getScheduledDate());
-        dto.setDonationDate(response.getDonationDate());
-        dto.setCreatedAt(response.getCreatedAt());
-        return dto;
-    }
+#### **POST /api/matching/auto-match/101**
+```json
+Response: 200 OK
+{
+  "requestId": 101,
+  "matchedDonors": [
+    {"donorId": 1, "notificationSent": true},
+    {"donorId": 5, "notificationSent": true}
+  ],
+  "message": "Notifications sent to 2 matching donors"
 }
-````
+```
 
-**5. Create Matching Service (1 hour)**
+### **Dashboard APIs**
 
-````java
-package com.vitasync.services;
-
-import com.vitasync.dto.DonorMatchDto;
-import com.vitasync.entity.TransfusionRequest;
-import com.vitasync.entity.User;
-import com.vitasync.enums.BloodType;
-import com.vitasync.enums.UserRole;
-import com.vitasync.repository.TransfusionRequestRepository;
-import com.vitasync.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Set;
-
-@Service
-@RequiredArgsConstructor
-public class MatchingService {
-    
-    private final UserRepository userRepository;
-    private final TransfusionRequestRepository requestRepository;
-    
-    public List<DonorMatchDto> findMatchingDonors(Long requestId) {
-        TransfusionRequest request = requestRepository.findById(requestId)
-            .orElseThrow(() -> new RuntimeException("Request not found"));
-        
-        Set<BloodType> compatibleTypes = getCompatibleBloodTypes(request.getBloodType());
-        
-        List<User> matchingDonors = userRepository.findAvailableDonorsByBloodTypes(compatibleTypes);
-        
-        return matchingDonors.stream()
-            .map(donor -> createDonorMatch(donor, request))
-            .toList();
-    }
-    
-    public void autoMatchDonors(Long requestId) {
-        List<DonorMatchDto> matches = findMatchingDonors(requestId);
-        
-        // Here you would implement notification logic
-        // For now, we'll just log the matches
-        System.out.println("Found " + matches.size() + " matching donors for request " + requestId);
-    }
-    
-    private Set<BloodType> getCompatibleBloodTypes(BloodType requestedType) {
-        return switch (requestedType) {
-            case AB_POSITIVE -> Set.of(BloodType.AB_POSITIVE, BloodType.AB_NEGATIVE, 
-                                     BloodType.A_POSITIVE, BloodType.A_NEGATIVE,
-                                     BloodType.B_POSITIVE, BloodType.B_NEGATIVE,
-                                     BloodType.O_POSITIVE, BloodType.O_NEGATIVE);
-            case AB_NEGATIVE -> Set.of(BloodType.AB_NEGATIVE, BloodType.A_NEGATIVE,
-                                      BloodType.B_NEGATIVE, BloodType.O_NEGATIVE);
-            case A_POSITIVE -> Set.of(BloodType.A_POSITIVE, BloodType.A_NEGATIVE,
-                                     BloodType.O_POSITIVE, BloodType.O_NEGATIVE);
-            case A_NEGATIVE -> Set.of(BloodType.A_NEGATIVE, BloodType.O_NEGATIVE);
-            case B_POSITIVE -> Set.of(BloodType.B_POSITIVE, BloodType.B_NEGATIVE,
-                                     BloodType.O_POSITIVE, BloodType.O_NEGATIVE);
-            case B_NEGATIVE -> Set.of(BloodType.B_NEGATIVE, BloodType.O_NEGATIVE);
-            case O_POSITIVE -> Set.of(BloodType.O_POSITIVE, BloodType.O_NEGATIVE);
-            case O_NEGATIVE -> Set.of(BloodType.O_NEGATIVE);
-        };
-    }
-    
-    private DonorMatchDto createDonorMatch(User donor, TransfusionRequest request) {
-        DonorMatchDto match = new DonorMatchDto();
-        match.setDonorId(donor.getId());
-        match.setName(donor.getName());
-        match.setBloodType(donor.getBloodType());
-        match.setCity(donor.getCity());
-        match.setLastDonationDate(donor.getLastDonationDate());
-        match.setAvailable(donor.getIsAvailable());
-        match.setMatchScore(calculateMatchScore(donor, request));
-        return match;
-    }
-    
-    private Integer calculateMatchScore(User donor, TransfusionRequest request) {
-        int score = 50; // Base score
-        
-        // Exact blood type match
-        if (donor.getBloodType() == request.getBloodType()) {
-            score += 30;
-        }
-        
-        // Recent donation penalty
-        if (donor.getLastDonationDate() != null && 
-            donor.getLastDonationDate().isAfter(LocalDate.now().minusDays(56))) {
-            score -= 20;
-        }
-        
-        // City match bonus
-        if (donor.getCity() != null && request.getHospitalAddress() != null &&
-            request.getHospitalAddress().contains(donor.getCity())) {
-            score += 20;
-        }
-        
-        return Math.max(0, Math.min(100, score));
-    }
+#### **GET /api/dashboard/stats**
+```json
+Response: 200 OK
+{
+  "totalDonors": 1250,
+  "activeDonors": 890,
+  "totalRequests": 156,
+  "urgentRequests": 12,
+  "successfulMatches": 134,
+  "successRate": 85.9,
+  "bloodTypeDistribution": {
+    "O_POSITIVE": 350,
+    "A_POSITIVE": 280,
+    "B_POSITIVE": 220,
+    "AB_POSITIVE": 120
+  }
 }
-````
+```
 
-**6. Create Controllers (1 hour)**
-
-````java
-package com.vitasync.controllers;
-
-import com.vitasync.dto.TransfusionRequestDto;
-import com.vitasync.enums.BloodType;
-import com.vitasync.enums.RequestStatus;
-import com.vitasync.enums.Urgency;
-import com.vitasync.services.TransfusionRequestService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-
-@RestController
-@RequestMapping("/api/transfusion-requests")
-@RequiredArgsConstructor
-@Tag(name = "Transfusion Requests", description = "Blood transfusion request management")
-public class TransfusionRequestController {
-    
-    private final TransfusionRequestService requestService;
-
-    @PostMapping
-    @Operation(summary = "Create a new transfusion request")
-    public ResponseEntity<TransfusionRequestDto> createRequest(
-            @Valid @RequestBody TransfusionRequestDto requestDto,
-            @RequestParam Long patientId) {
-        
-        TransfusionRequestDto created = requestService.createRequest(requestDto, patientId);
-        return new ResponseEntity<>(created, HttpStatus.CREATED);
+#### **GET /api/dashboard/urgent-requests**
+```json
+Response: 200 OK
+{
+  "criticalRequests": [
+    {
+      "id": 101,
+      "patientName": "Jane Smith",
+      "bloodType": "O_POSITIVE",
+      "urgency": "CRITICAL",
+      "hospitalName": "Apollo Hospital",
+      "requiredByDate": "2025-08-18T20:00:00Z",
+      "hoursRemaining": 6,
+      "responseCount": 1
     }
-
-    @GetMapping
-    @Operation(summary = "Get transfusion requests with filters")
-    public ResponseEntity<Page<TransfusionRequestDto>> getRequests(
-            @RequestParam(required = false) RequestStatus status,
-            @RequestParam(required = false) Urgency urgency,
-            @RequestParam(required = false) BloodType bloodType,
-            Pageable pageable) {
-        
-        Page<TransfusionRequestDto> requests = requestService.getRequests(status, urgency, bloodType, pageable);
-        return ResponseEntity.ok(requests);
-    }
-
-    @GetMapping("/{id}")
-    @Operation(summary = "Get transfusion request by ID")
-    public ResponseEntity<TransfusionRequestDto> getRequestById(@PathVariable Long id) {
-        TransfusionRequestDto request = requestService.getRequestById(id);
-        return ResponseEntity.ok(request);
-    }
-
-    @GetMapping("/urgent")
-    @Operation(summary = "Get urgent transfusion requests")
-    public ResponseEntity<List<TransfusionRequestDto>> getUrgentRequests() {
-        List<TransfusionRequestDto> requests = requestService.getUrgentRequests();
-        return ResponseEntity.ok(requests);
-    }
-
-    @PutMapping("/{id}/status")
-    @Operation(summary = "Update request status")
-    public ResponseEntity<TransfusionRequestDto> updateStatus(
-            @PathVariable Long id,
-            @RequestParam RequestStatus status) {
-        
-        TransfusionRequestDto updated = requestService.updateRequestStatus(id, status);
-        return ResponseEntity.ok(updated);
-    }
+  ]
 }
-````
+```
 
-### **Day 2: Dashboard, Docker & Deployment**
+---
 
-#### **Morning Session (4 hours)**
+## 📋 Simplified Requirements
+- **Users** can register as donors or patients
+- **Patients** can request blood transfusions
+- **Donors** can see requests and respond
+- **Admin** can view all data
+- Basic REST API + Simple web interface (optional)
+- **Dockerized** for easy Azure deployment
 
-**7. Create Dashboard Service & Controller (1.5 hours)**
+---
 
-````java
-package com.vitasync.services;
+## 🏗️ Technology Stack (Simplified)
+- **Language:** Java 17
+- **Framework:** Spring Boot 3 (traditional MVC, not WebFlux)
+- **Database:** 
+  - **Development:** H2 in-memory (for quick testing)
+  - **Production:** PostgreSQL via Azure Database for PostgreSQL
+- **ORM:** Spring Data JPA (much easier than R2DBC)
+- **Frontend:** Thymeleaf templates (optional) OR just REST API
+- **Documentation:** SpringDoc OpenAPI
+- **Container:** Docker
 
-import com.vitasync.dto.DashboardStatsDto;
-import com.vitasync.enums.BloodType;
-import com.vitasync.enums.RequestStatus;
-import com.vitasync.enums.UserRole;
-import com.vitasync.repository.DonationResponseRepository;
-import com.vitasync.repository.TransfusionRequestRepository;
-import com.vitasync.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+---
 
-import java.util.Map;
-import java.util.stream.Collectors;
+## 📅 2-Day Sprint Plan
 
-@Service
-@RequiredArgsConstructor
-public class DashboardService {
-    
-    private final UserRepository userRepository;
-    private final TransfusionRequestRepository requestRepository;
-    private final DonationResponseRepository responseRepository;
+### **Day 1: Core Backend (6-8 hours)**
 
-    public DashboardStatsDto getDashboardStats() {
-        DashboardStatsDto stats = new DashboardStatsDto();
-        
-        stats.setTotalDonors(userRepository.countByRole(UserRole.DONOR));
-        stats.setActiveDonors(userRepository.countByRoleAndIsAvailable(UserRole.DONOR, true));
-        stats.setTotalRequests(requestRepository.count());
-        stats.setUrgentRequests(requestRepository.countByStatus(RequestStatus.PENDING));
-        stats.setSuccessfulMatches(responseRepository.countSuccessfulDonations());
-        
-        // Calculate success rate
-        long totalRequests = stats.getTotalRequests();
-        if (totalRequests > 0) {
-            stats.setSuccessRate((double) stats.getSuccessfulMatches() / totalRequests * 100);
-        } else {
-            stats.setSuccessRate(0.0);
-        }
-        
-        // Blood type distribution
-        Map<BloodType, Long> distribution = userRepository.countDonorsByBloodType()
-            .stream()
-            .collect(Collectors.toMap(
-                result -> (BloodType) result[0],
-                result -> (Long) result[1]
-            ));
-        stats.setBloodTypeDistribution(distribution);
-        
-        return stats;
-    }
-}
-````
+#### Morning (3-4 hours):
+1. **Project Setup (30 mins)**
+   - Create Spring Boot project with dependencies:
+     - Spring Web
+     - Spring Data JPA
+     - H2 Database (for testing)
+     - PostgreSQL Driver
+     - SpringDoc OpenAPI
+   - Basic project structure
 
-**8. Update Database Configuration (30 minutes)**
+2. **Enhanced Database Models (1.5 hours)**
+   ```
+   User: id, name, email, phone, bloodType, role (DONOR/PATIENT/ADMIN), 
+         address, city, state, isAvailable, lastDonationDate, createdAt, updatedAt
+   
+   TransfusionRequest: id, patientId, patientName, bloodType, unitsRequired, 
+                      urgency (LOW/MEDIUM/HIGH/CRITICAL), hospitalName, 
+                      hospitalAddress, contactNumber, medicalReason, 
+                      status (PENDING/MATCHED/FULFILLED/CANCELLED), 
+                      requiredByDate, createdAt, updatedAt
+   
+   DonationResponse: id, donorId, requestId, status (INTERESTED/CONFIRMED/COMPLETED/DECLINED),
+                    donorNotes, scheduledDate, donationDate, createdAt, updatedAt
+   
+   BloodBank: id, name, address, phone, availableBloodTypes, operatingHours
+   ```
 
-````properties
-# Application Configuration
-spring.application.name=VitaSync Blood Bank Management System
-server.port=8080
+3. **Services & Controllers Setup (1.5 hours)**
+   - UserService & UserController
+   - TransfusionRequestService & Controller
+   - DonationResponseService & Controller
+   - BloodBankService & Controller
 
-# Database Configuration
-spring.datasource.url=${DATABASE_URL:jdbc:h2:mem:testdb}
-spring.datasource.driver-class-name=${DATABASE_DRIVER:org.h2.Driver}
-spring.datasource.username=${DATABASE_USERNAME:sa}
-spring.datasource.password=${DATABASE_PASSWORD:}
+#### Afternoon (3-4 hours):
+4. **Comprehensive API Endpoints (2.5 hours)**
 
-# JPA Configuration
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
-spring.jpa.properties.hibernate.format_sql=true
-spring.jpa.database-platform=${DATABASE_PLATFORM:org.hibernate.dialect.H2Dialect}
+**User Management:**
+- POST /api/users/register
+- POST /api/users/login (basic auth)
+- GET /api/users/{id}/profile
+- PUT /api/users/{id}/profile
+- PUT /api/users/{id}/availability (for donors)
+- GET /api/users/donors (with filters: bloodType, city, availability)
+- GET /api/users/{id}/donation-history
 
-# H2 Console (for development)
-spring.h2.console.enabled=true
-spring.h2.console.path=/h2-console
+**Transfusion Request Management:**
+- POST /api/transfusion-requests
+- GET /api/transfusion-requests (with filters: bloodType, urgency, city, status)
+- GET /api/transfusion-requests/{id}
+- PUT /api/transfusion-requests/{id}
+- DELETE /api/transfusion-requests/{id}
+- GET /api/transfusion-requests/patient/{patientId}
+- POST /api/transfusion-requests/{id}/cancel
 
-# JWT Configuration
-jwt.secret=${JWT_SECRET:mySecretKey}
-jwt.expiration=${JWT_EXPIRATION:86400000}
+**Donation Response Management:**
+- POST /api/donation-responses
+- GET /api/donation-responses/request/{requestId}
+- GET /api/donation-responses/donor/{donorId}
+- PUT /api/donation-responses/{id}/status
+- POST /api/donation-responses/{id}/schedule
+- POST /api/donation-responses/{id}/complete
 
-# OpenAPI Configuration
-springdoc.api-docs.path=/api-docs
-springdoc.swagger-ui.path=/swagger-ui.html
-springdoc.swagger-ui.operationsSorter=method
+**Matching & Discovery:**
+- GET /api/matching/donors-for-request/{requestId}
+- GET /api/matching/requests-for-donor/{donorId}
+- POST /api/matching/auto-match/{requestId}
 
-# Logging
-logging.level.com.vitasync=DEBUG
-logging.level.org.springframework.security=DEBUG
-````
+**Blood Bank Management:**
+- GET /api/blood-banks
+- GET /api/blood-banks/nearby?lat={lat}&lng={lng}
+- GET /api/blood-banks/{id}/inventory
 
-````properties
-# Production Database Configuration
-spring.datasource.url=${DATABASE_URL}
-spring.datasource.driver-class-name=org.postgresql.Driver
-spring.datasource.username=${DATABASE_USERNAME}
-spring.datasource.password=${DATABASE_PASSWORD}
+**Analytics & Dashboard:**
+- GET /api/dashboard/stats
+- GET /api/dashboard/urgent-requests
+- GET /api/dashboard/recent-activities
 
-# JPA Configuration for Production
-spring.jpa.hibernate.ddl-auto=validate
-spring.jpa.show-sql=false
-spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
+5. **Validation & Error Handling (1 hour)**
+   - Input validation with comprehensive rules
+   - Custom exception handling
+   - Proper HTTP status codes
+   - Error response DTOs
 
-# Disable H2 Console in production
-spring.h2.console.enabled=false
+6. **Testing with H2 (0.5 hours)**
+   - Test critical endpoints
+   - Verify data persistence
 
-# Logging for Production
-logging.level.com.vitasync=INFO
-logging.level.org.springframework.security=WARN
-````
+### **Day 2: Deployment Ready (6-8 hours)**
 
-**9. Create Docker Configuration (1 hour)**
+#### Morning (3-4 hours):
+1. **Database Configuration (1 hour)**
+   - Configure PostgreSQL for production
+   - Create `application-prod.yml`
+   - Environment variable configuration
 
-````dockerfile
-FROM openjdk:21-jre-slim
+2. **Docker Setup (2 hours)**
+   - Create `Dockerfile`
+   - Create `docker-compose.yml` (with PostgreSQL for local testing)
+   - Test containerization locally
 
-# Set working directory
-WORKDIR /app
+#### Afternoon (3-4 hours):
+3. **Azure Preparation (1 hour)**
+   - Environment variables setup
+   - Database connection configuration
+   - Health check endpoints
 
-# Copy the jar file
+4. **Documentation (1 hour)**
+   - API documentation via Swagger UI
+   - Simple README with deployment instructions
+
+5. **Final Testing (1 hour)**
+   - End-to-end testing
+   - Docker deployment test
+
+6. **Buffer Time (1 hour)**
+   - Fix any issues
+   - Basic cleanup
+
+---
+
+## 🗃️ Database Strategy
+
+### Development:
+- Use **H2 in-memory** database for quick development
+- No installation needed, perfect for rapid prototyping
+
+### Production (Azure):
+- **Option 1:** Azure Database for PostgreSQL (Flexible Server)
+  - ~$20-30/month for basic tier
+  - Managed, no maintenance needed
+  
+- **Option 2:** PostgreSQL in Docker container
+  - Use Azure Container Instances
+  - Cheaper but you manage backups
+
+### Recommendation:
+Start with H2 for development, then use Azure Database for PostgreSQL for production. It's worth the cost for a working application.
+
+---
+
+## 🐳 Docker Strategy
+
+### Simple Dockerfile:
+```dockerfile
+FROM openjdk:17-jre-slim
 COPY target/vitasync-*.jar app.jar
-
-# Expose port
 EXPOSE 8080
-
-# Add health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
-  CMD curl -f http://localhost:8080/actuator/health || exit 1
-
-# Run the application
 ENTRYPOINT ["java", "-jar", "/app.jar"]
-````
+```
 
-````yaml
-version: '3.8'
+### Azure Deployment Options:
+1. **Azure Container Instances** (simplest)
+2. **Azure App Service** (container deployment)
+3. **Azure Container Apps** (more advanced)
 
-services:
-  postgres:
-    image: postgres:15
-    environment:
-      POSTGRES_DB: vitasync
-      POSTGRES_USER: vitasync
-      POSTGRES_PASSWORD: vitasync123
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - vitasync-network
+---
 
-  vitasync-app:
-    build: .
-    ports:
-      - "8080:8080"
-    environment:
-      DATABASE_URL: jdbc:postgresql://postgres:5432/vitasync
-      DATABASE_DRIVER: org.postgresql.Driver
-      DATABASE_USERNAME: vitasync
-      DATABASE_PASSWORD: vitasync123
-      DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
-      JWT_SECRET: myVerySecretJWTKey123456789
-      SPRING_PROFILES_ACTIVE: prod
-    depends_on:
-      - postgres
-    networks:
-      - vitasync-network
+## 🎯 Success Criteria (Minimum Viable Product)
 
-volumes:
-  postgres_data:
-
-networks:
-  vitasync-network:
-    driver: bridge
-````
-
-**10. Add Missing Dependencies (15 minutes)**
-
-````xml
-plugins {
-    id 'java'
-    id 'org.springframework.boot' version '3.2.0'
-    id 'io.spring.dependency-management' version '1.1.4'
-}
-
-group = 'com.vitasync'
-version = '0.0.1-SNAPSHOT'
-
-java {
-    sourceCompatibility = '21'
-}
-
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
-    }
-}
-
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    
-    // JWT
-    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
-    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
-    
-    // OpenAPI Documentation
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
-    
-    // Database
-    runtimeOnly 'com.h2database:h2'
-    runtimeOnly 'org.postgresql:postgresql'
-    
-    // Lombok
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-    
-    // Testing
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.security:spring-security-test'
-}
-
-tasks.named('test') {
-    useJUnitPlatform()
-}
-````
-
-#### **Afternoon Session (3 hours)**
-
-**11. Complete Missing DTOs & Controllers (1 hour)**
-
-````java
-package com.vitasync.dto;
-
-import com.vitasync.enums.BloodType;
-import lombok.Data;
-
-import java.time.LocalDate;
-
-@Data
-public class DonorMatchDto {
-    private Long donorId;
-    private String name;
-    private BloodType bloodType;
-    private String city;
-    private LocalDate lastDonationDate;
-    private String distance;
-    private Boolean isAvailable;
-    private Integer matchScore;
-}
-````
-
-````java
-package com.vitasync.dto;
-
-import com.vitasync.enums.BloodType;
-import lombok.Data;
-
-import java.util.Map;
-
-@Data
-public class DashboardStatsDto {
-    private Long totalDonors;
-    private Long activeDonors;
-    private Long totalRequests;
-    private Long urgentRequests;
-    private Long successfulMatches;
-    private Double successRate;
-    private Map<BloodType, Long> bloodTypeDistribution;
-}
-````
-
-**12. Add Missing Repository Methods (30 minutes)**
-
-````java
-package com.vitasync.repository;
-
-import com.vitasync.entity.User;
-import com.vitasync.enums.BloodType;
-import com.vitasync.enums.UserRole;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-public interface UserRepository extends JpaRepository<User, Long> {
-    
-    Optional<User> findByEmail(String email);
-    
-    boolean existsByEmail(String email);
-    
-    List<User> findByRoleAndIsAvailableAndBloodTypeIn(
-        UserRole role, Boolean isAvailable, Set<BloodType> bloodTypes);
-    
-    @Query("SELECT u FROM User u WHERE u.role = 'DONOR' AND u.isAvailable = true AND u.bloodType IN :bloodTypes")
-    List<User> findAvailableDonorsByBloodTypes(@Param("bloodTypes") Set<BloodType> bloodTypes);
-    
-    @Query("SELECT COUNT(u) FROM User u WHERE u.role = :role")
-    Long countByRole(@Param("role") UserRole role);
-    
-    @Query("SELECT COUNT(u) FROM User u WHERE u.role = :role AND u.isAvailable = :isAvailable")
-    Long countByRoleAndIsAvailable(@Param("role") UserRole role, @Param("isAvailable") Boolean isAvailable);
-    
-    @Query("SELECT u.bloodType, COUNT(u) FROM User u WHERE u.role = 'DONOR' GROUP BY u.bloodType")
-    List<Object[]> countDonorsByBloodType();
-}
-````
-
-**13. Final Testing & Documentation (1.5 hours)**
-
-Create comprehensive testing and documentation:
-
-````java
-package com.vitasync;
-
-import com.vitasync.controllers.TransfusionRequestController;
-import com.vitasync.services.TransfusionRequestService;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-@WebMvcTest(TransfusionRequestController.class)
-class TransfusionRequestControllerTest {
-    
-    @Autowired
-    private MockMvc mockMvc;
-    
-    @MockBean
-    private TransfusionRequestService requestService;
-    
-    @Test
-    void shouldReturnUrgentRequests() throws Exception {
-        mockMvc.perform(get("/api/transfusion-requests/urgent"))
-                .andExpect(status().isOk());
-    }
-}
-````
-
-## 🚀 Quick Deployment Commands
-
-**Build and Test:**
-````bash
-./gradlew clean build
-./gradlew test
-````
-
-**Docker Commands:**
-````bash
-# Build the application
-./gradlew clean package
-
-# Build Docker image
-docker build -t vitasync-app .
-
-# Run with Docker Compose
-docker-compose up -d
-
-# Check logs
-docker-compose logs -f vitasync-app
-````
-
-## 🎯 Final Checklist
-
-**By Tomorrow Evening, you should have:**
-- ✅ Complete REST API with all endpoints from Plaining.md
-- ✅ Working authentication system
-- ✅ Blood donation matching algorithm
-- ✅ Dashboard with statistics
+By end of Day 2, you should have:
+- ✅ Working REST API with all CRUD operations
 - ✅ Dockerized application
-- ✅ Production-ready database configuration
-- ✅ Swagger API documentation at `/swagger-ui.html`
-- ✅ Health checks and monitoring endpoints
+- ✅ Database configured for production
+- ✅ Deployable to Azure
+- ✅ API documentation via Swagger
 
-**Access Points:**
-- API Documentation: `http://localhost:8080/swagger-ui.html`
-- H2 Console (dev): `http://localhost:8080/h2-console`
-- Health Check: `http://localhost:8080/actuator/health`
+## 🚀 Nice-to-Have (If Time Permits)
+- Simple web interface with Thymeleaf
+- Basic authentication
+- Email notifications (using simple JavaMail)
+- Blood type matching logic
 
-This roadmap will get you a fully functional VitaSync Blood Bank Management System ready for Azure deployment by tomorrow evening!
+---
 
-Similar code found with 3 license types
+## 🔧 Quick Start Command Sequence
+
+1. **Generate Project:**
+   ```bash
+   curl https://start.spring.io/starter.tgz \
+     -d dependencies=web,data-jpa,h2,postgresql,validation \
+     -d javaVersion=17 \
+     -d bootVersion=3.2.0 \
+     -d groupId=com.vitasync \
+     -d artifactId=vitasync-app | tar -xzf -
+   ```
+
+2. **Development:**
+   ```bash
+   ./mvnw spring-boot:run
+   # Test with H2 console at http://localhost:8080/h2-console
+   ```
+
+3. **Docker Build:**
+   ```bash
+   ./mvnw clean package
+   docker build -t vitasync-app .
+   docker run -p 8080:8080 vitasync-app
+   ```
+
+---
+
+## 💡 Pro Tips for 2-Day Success
+
+1. **Start with H2** - Don't waste time setting up PostgreSQL locally
+2. **Use Spring Boot DevTools** - Auto-restart on code changes
+3. **Test frequently** - Use Swagger UI for quick API testing
+4. **Keep it simple** - No complex business logic initially
+5. **Version control** - Commit working code frequently
+6. **Environment variables** - Use them for database config from day 1
+
+---
+
+This plan gets you a **working, deployable application** in 2 days. Once it's running on Azure, you can iterate and add features incrementally!

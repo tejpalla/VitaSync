@@ -32,4 +32,7 @@ public interface TransfusionRequestRepository extends JpaRepository<TransfusionR
     
     @Query("SELECT tr FROM TransfusionRequest tr WHERE tr.requiredByDate < :dateTime AND tr.status = 'PENDING'")
     List<TransfusionRequest> findOverdueRequests(@Param("dateTime") LocalDateTime dateTime);
+    
+    @Query("SELECT tr FROM TransfusionRequest tr WHERE tr.createdAt >= :since ORDER BY tr.createdAt DESC")
+    List<TransfusionRequest> findRecentRequests(@Param("since") LocalDateTime since);
 }

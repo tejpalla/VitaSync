@@ -70,4 +70,25 @@ public class TransfusionRequestController {
         TransfusionRequestDto updated = requestService.updateRequestStatus(id, status);
         return ResponseEntity.ok(updated);
     }
+
+    @GetMapping("/patient/{patientId}")
+    @Operation(summary = "Get requests by patient ID")
+    public ResponseEntity<List<TransfusionRequestDto>> getRequestsByPatient(@PathVariable Long patientId) {
+        List<TransfusionRequestDto> requests = requestService.getRequestsByPatient(patientId);
+        return ResponseEntity.ok(requests);
+    }
+
+    @PostMapping("/{id}/cancel")
+    @Operation(summary = "Cancel a transfusion request")
+    public ResponseEntity<TransfusionRequestDto> cancelRequest(@PathVariable Long id) {
+        TransfusionRequestDto cancelled = requestService.updateRequestStatus(id, RequestStatus.CANCELLED);
+        return ResponseEntity.ok(cancelled);
+    }
+
+    @GetMapping("/overdue")
+    @Operation(summary = "Get overdue requests")
+    public ResponseEntity<List<TransfusionRequestDto>> getOverdueRequests() {
+        List<TransfusionRequestDto> overdue = requestService.getOverdueRequests();
+        return ResponseEntity.ok(overdue);
+    }
 }

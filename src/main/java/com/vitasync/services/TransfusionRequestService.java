@@ -6,6 +6,7 @@ import com.vitasync.entity.User;
 import com.vitasync.enums.BloodType;
 import com.vitasync.enums.RequestStatus;
 import com.vitasync.enums.Urgency;
+import com.vitasync.repository.DonationResponseRepository;
 import com.vitasync.repository.TransfusionRequestRepository;
 import com.vitasync.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ public class TransfusionRequestService {
     private final TransfusionRequestRepository requestRepository;
     private final UserRepository userRepository;
     private final MatchingService matchingService;
+    private final DonationResponseRepository resquestRepository;
 
     public TransfusionRequestDto createRequest(TransfusionRequestDto dto, Long patientId) {
         User patient = userRepository.findById(patientId)
@@ -91,7 +93,20 @@ public class TransfusionRequestService {
         return convertToDto(requestRepository.save(request));
     }
 
-    private TransfusionRequestDto convertToDto(TransfusionRequest request) {
+    public List<TransfusionRequestDto> getRequestsByPatient(Long patientId) {
+        return requestRepository.findByPatientId(patientId).stream()
+            .map(this::convertToDto)
+            .toList();
+    }
+
+    public List<TransfusionRequestDto> getOverdueRequests() {
+        LocalDateTime now = LocalDateTime.now();
+        return requestRepository.findOverdueRequests(now).stream()
+            .map(this::convertToDto)
+            .toList();
+    }
+
+    public TransfusionRequestDto convertToDto(TransfusionRequest request) {
         TransfusionRequestDto dto = new TransfusionRequestDto();
         dto.setId(request.getId());
         dto.setPatientName(request.getPatientName());
@@ -105,6 +120,10 @@ public class TransfusionRequestService {
         dto.setStatus(request.getStatus());
         dto.setRequiredByDate(request.getRequiredByDate());
         dto.setCreatedAt(request.getCreatedAt());
+    
+        // Add response count
+        dto.setResponseCount(resquestRepository.countResponsesByRequestId(request.getId()));
+
         return dto;
     }
 }

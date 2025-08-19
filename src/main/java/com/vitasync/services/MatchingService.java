@@ -1,9 +1,11 @@
 package com.vitasync.services;
 
 import com.vitasync.dto.DonorMatchDto;
+import com.vitasync.dto.TransfusionRequestDto;
 import com.vitasync.entity.TransfusionRequest;
 import com.vitasync.entity.User;
 import com.vitasync.enums.BloodType;
+import com.vitasync.enums.RequestStatus;
 import com.vitasync.repository.TransfusionRequestRepository;
 import com.vitasync.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +34,52 @@ public class MatchingService {
             .map(donor -> createDonorMatch(donor, request))
             .toList();
     }
+
+    public List<TransfusionRequestDto> findSuitableRequests(Long donorId) {
+        User donor = userRepository.findById(donorId)
+            .orElseThrow(() -> new RuntimeException("Donor not found"));
+        
+        // Find pending requests that match donor's blood type
+        Set<BloodType> donorCompatibleTypes = getRequestCompatibleTypes(donor.getBloodType());
+        
+        return requestRepository.findAll().stream()
+            .filter(request -> request.getStatus() == RequestStatus.PENDING)
+            .filter(request -> donorCompatibleTypes.contains(request.getBloodType()))
+            .map(request -> {
+                TransfusionRequestDto dto = new TransfusionRequestDto();
+                dto.setId(request.getId());
+                dto.setPatientName(request.getPatientName());
+                dto.setBloodType(request.getBloodType());
+                dto.setUnitsRequired(request.getUnitsRequired());
+                dto.setUrgency(request.getUrgency());
+                dto.setHospitalName(request.getHospitalName());
+                dto.setRequiredByDate(request.getRequiredByDate());
+                dto.setCreatedAt(request.getCreatedAt());
+                return dto;
+            })
+            .toList();
+    }
+
+    private Set<BloodType> getRequestCompatibleTypes(BloodType donorBloodType) {
+    // Reverse compatibility - what requests can this donor fulfill
+        return switch (donorBloodType) {
+            case O_NEGATIVE -> Set.of(BloodType.O_NEGATIVE, BloodType.O_POSITIVE,
+                                    BloodType.A_NEGATIVE, BloodType.A_POSITIVE,
+                                    BloodType.B_NEGATIVE, BloodType.B_POSITIVE,
+                                    BloodType.AB_NEGATIVE, BloodType.AB_POSITIVE);
+            case O_POSITIVE -> Set.of(BloodType.O_POSITIVE, BloodType.A_POSITIVE,
+                                    BloodType.B_POSITIVE, BloodType.AB_POSITIVE);
+            case A_NEGATIVE -> Set.of(BloodType.A_NEGATIVE, BloodType.A_POSITIVE,
+                                    BloodType.AB_NEGATIVE, BloodType.AB_POSITIVE);
+            case A_POSITIVE -> Set.of(BloodType.A_POSITIVE, BloodType.AB_POSITIVE);
+            case B_NEGATIVE -> Set.of(BloodType.B_NEGATIVE, BloodType.B_POSITIVE,
+                                    BloodType.AB_NEGATIVE, BloodType.AB_POSITIVE);
+            case B_POSITIVE -> Set.of(BloodType.B_POSITIVE, BloodType.AB_POSITIVE);
+            case AB_NEGATIVE -> Set.of(BloodType.AB_NEGATIVE, BloodType.AB_POSITIVE);
+            case AB_POSITIVE -> Set.of(BloodType.AB_POSITIVE);
+        };
+    }
+
     
     public void autoMatchDonors(Long requestId) {
         List<DonorMatchDto> matches = findMatchingDonors(requestId);

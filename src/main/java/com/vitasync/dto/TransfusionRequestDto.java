@@ -42,4 +42,5 @@ public class TransfusionRequestDto {
     private LocalDateTime createdAt;
     private Integer responseCount;
     private Integer matchingDonorsCount;
+    
 }
