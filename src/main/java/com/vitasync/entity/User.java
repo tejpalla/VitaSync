@@ -65,7 +65,7 @@ public class User {
 
     @NotNull(message = "Role is required")
     @Enumerated(EnumType.STRING)
-    private UserRole role;
+    private UserRole role;  //    DONOR, RECIPIENT, ADMIN, DOCTOR
 
     private Double longitude; // Optional - can be set later
 
@@ -80,4 +80,12 @@ public class User {
 
     @UpdateTimestamp
     private LocalDate updatedAt;
+
+    // Inside User.java
+    // Fields only relevant if role == RECIPIENT
+    private Integer transfusionFrequencyDays;  // e.g. every 15 days
+    
+    private LocalDate nextTransfusionDate;     // auto-calculated after each transfusion
+    
+    private Boolean autoScheduleEnabled = false; // toggle automation
 }

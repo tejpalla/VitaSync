@@ -1,17 +1,18 @@
 package com.vitasync.repository;
 
-import com.vitasync.entity.User;
-import com.vitasync.enums.BloodType;
-import com.vitasync.enums.UserRole;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import com.vitasync.entity.User;
+import com.vitasync.enums.BloodType;
+import com.vitasync.enums.UserRole;
 
 public interface UserRepository extends JpaRepository<User, Long> {
     
@@ -34,4 +35,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     
     Page<User> findByRoleAndBloodTypeAndCityContainingIgnoreCaseAndIsAvailable(
         UserRole role, BloodType bloodType, String city, Boolean isAvailable, Pageable pageable);
+
+    List<User> findByAutoScheduleEnabledTrue();
 }
