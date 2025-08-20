@@ -29,6 +29,7 @@ public class TransfusionRequestService {
     private final UserRepository userRepository;
     private final MatchingService matchingService;
     private final DonationResponseRepository resquestRepository;
+    private final NotificationService notificationService;
 
     public TransfusionRequestDto createRequest(TransfusionRequestDto dto, Long patientId) {
         User patient = userRepository.findById(patientId)
@@ -51,7 +52,15 @@ public class TransfusionRequestService {
         
         // Auto-match with donors
         matchingService.autoMatchDonors(saved.getId());
-        
+
+               // 🔔 send email notification
+        notificationService.sendEmail(
+                patient.getEmail(), // Replace with dto.getPatientEmail()
+                "Transfusion Request Submitted",
+                "Dear " + dto.getPatientName() + 
+                ",\n\nYour transfusion request has been received.\n\n- VitaSync Team"
+        );
+
         return convertToDto(saved);
     }
 
