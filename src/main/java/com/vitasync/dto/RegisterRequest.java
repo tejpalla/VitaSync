@@ -10,6 +10,9 @@ import lombok.Data;
 @Data
 public class RegisterRequest {
     
+    @NotBlank(message = "Name is required")
+    private String name; // NEW FIELD - SAFE TO ADD
+
     @NotBlank(message = "Email is required")
     @Email(message = "Please provide a valid email")
     private String email;
