@@ -8,6 +8,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import com.vitasync.enums.BloodType;
 import com.vitasync.enums.UserRole;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -81,11 +82,18 @@ public class User {
     @UpdateTimestamp
     private LocalDate updatedAt;
 
-    // Inside User.java
-    // Fields only relevant if role == RECIPIENT
-    private Integer transfusionFrequencyDays;  // e.g. every 15 days
-    
-    private LocalDate nextTransfusionDate;     // auto-calculated after each transfusion
-    
-    private Boolean autoScheduleEnabled = false; // toggle automation
+    @Column(name = "auto_schedule_enabled")
+    private Boolean autoScheduleEnabled = false;
+
+    @Column(name = "transfusion_frequency_days")
+    private Integer transfusionFrequencyDays;
+
+    @Column(name = "next_transfusion_date")
+    private LocalDate nextTransfusionDate;
+
+    @Column(name = "preferred_hospital_name")
+    private String preferredHospitalName;
+
+    @Column(name = "preferred_hospital_address")
+    private String preferredHospitalAddress;
 }

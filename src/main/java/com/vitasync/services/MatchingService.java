@@ -39,24 +39,12 @@ public class MatchingService {
         User donor = userRepository.findById(donorId)
             .orElseThrow(() -> new RuntimeException("Donor not found"));
         
-        // Find pending requests that match donor's blood type
         Set<BloodType> donorCompatibleTypes = getRequestCompatibleTypes(donor.getBloodType());
         
         return requestRepository.findAll().stream()
             .filter(request -> request.getStatus() == RequestStatus.PENDING)
             .filter(request -> donorCompatibleTypes.contains(request.getBloodType()))
-            .map(request -> {
-                TransfusionRequestDto dto = new TransfusionRequestDto();
-                dto.setId(request.getId());
-                dto.setPatientName(request.getPatientName());
-                dto.setBloodType(request.getBloodType());
-                dto.setUnitsRequired(request.getUnitsRequired());
-                dto.setUrgency(request.getUrgency());
-                dto.setHospitalName(request.getHospitalName());
-                dto.setRequiredByDate(request.getRequiredByDate());
-                dto.setCreatedAt(request.getCreatedAt());
-                return dto;
-            })
+            .map(this::convertRequestToDto)
             .toList();
     }
 
@@ -118,6 +106,19 @@ public class MatchingService {
         match.setIsAvailable(donor.getIsAvailable());
         match.setMatchScore(calculateMatchScore(donor, request));
         return match;
+    }
+
+    private TransfusionRequestDto convertRequestToDto(TransfusionRequest request) {
+        TransfusionRequestDto dto = new TransfusionRequestDto();
+        dto.setId(request.getId());
+        dto.setPatientName(request.getPatientName());
+        dto.setBloodType(request.getBloodType());
+        dto.setUnitsRequired(request.getUnitsRequired());
+        dto.setUrgency(request.getUrgency());
+        dto.setHospitalName(request.getHospitalName());
+        dto.setRequiredByDate(request.getRequiredByDate());
+        dto.setCreatedAt(request.getCreatedAt());
+        return dto;
     }
     
     private Integer calculateMatchScore(User donor, TransfusionRequest request) {

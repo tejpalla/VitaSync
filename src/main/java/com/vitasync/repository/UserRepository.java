@@ -36,5 +36,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Page<User> findByRoleAndBloodTypeAndCityContainingIgnoreCaseAndIsAvailable(
         UserRole role, BloodType bloodType, String city, Boolean isAvailable, Pageable pageable);
 
+    @Query("SELECT u FROM User u WHERE u.autoScheduleEnabled = true")
     List<User> findByAutoScheduleEnabledTrue();
 }

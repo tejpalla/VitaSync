@@ -1,7 +1,8 @@
 package com.vitasync.enums;
 
 public enum Urgency { 
-    LOW, 
+    LOW,
+    ROUTINE,
     MEDIUM, 
     HIGH, 
     CRITICAL 

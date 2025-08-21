@@ -66,7 +66,12 @@ public class AuthController {
         // Set default location if not provided (required fields)
         newUser.setLongitude(request.getLongitude() != null ? request.getLongitude() : 0.0);
         newUser.setLatitude(request.getLatitude() != null ? request.getLatitude() : 0.0);
-        
+        newUser.setAutoScheduleEnabled(request.getAutoScheduleEnabled());
+        newUser.setTransfusionFrequencyDays(request.getTransfusionFrequencyDays());
+        newUser.setNextTransfusionDate(request.getNextTransfusionDate());
+        newUser.setPreferredHospitalName(request.getPreferredHospitalName());
+        newUser.setPreferredHospitalAddress(request.getPreferredHospitalAddress());
+
         User savedUser = userRepository.save(newUser);
         
         // Auto-login after registration

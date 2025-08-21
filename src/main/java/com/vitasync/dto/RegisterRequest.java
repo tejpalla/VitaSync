@@ -1,5 +1,7 @@
 package com.vitasync.dto;
 
+import java.time.LocalDate;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -26,4 +28,14 @@ public class RegisterRequest {
     private Double longitude;
     
     private Double latitude;
+
+    private Boolean autoScheduleEnabled = false;
+    private Integer transfusionFrequencyDays;
+    private LocalDate nextTransfusionDate;
+    private String preferredHospitalName;
+    private String preferredHospitalAddress;
+
+    public Boolean getAutoScheduleEnabled() {
+        return autoScheduleEnabled;
+    }
 }

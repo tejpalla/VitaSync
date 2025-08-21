@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import com.vitasync.enums.Urgency;
 
 import com.vitasync.dto.TransfusionRequestDto;
 import com.vitasync.entity.User;
@@ -61,10 +62,10 @@ public class AutoTransfusionScheduler {
         dto.setPatientName(patient.getName());
         dto.setBloodType(patient.getBloodType());
         dto.setUnitsRequired(1); // default for MVP
-        // dto.setUrgency(Urgency.ROUTINE);
-        // dto.setHospitalName();
-        // dto.setHospitalAddress(patient.getPreferredHospitalAddress());
-        // dto.setContactNumber(patient.getPhoneNumber());
+        dto.setUrgency(Urgency.ROUTINE);
+        dto.setHospitalName(patient.getPreferredHospitalName());
+        dto.setHospitalAddress(patient.getPreferredHospitalAddress());
+        dto.setContactNumber(patient.getPhone());
         dto.setMedicalReason("Automated scheduled transfusion");
         dto.setStatus(RequestStatus.PENDING);
         dto.setRequiredByDate(patient.getNextTransfusionDate().atStartOfDay());
