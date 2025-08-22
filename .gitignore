@@ -3,6 +3,8 @@ HELP.md
 .env
 .DS_Store
 build/
+ml-service/
+vitasync-ai/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
