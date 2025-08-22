@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+pandas
+numpy
+prophet
+scikit-learn
+sqlalchemy
+psycopg2-binary
+pydantic
+PuLP
