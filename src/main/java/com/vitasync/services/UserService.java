@@ -2,8 +2,10 @@ package com.vitasync.services;
 
 import java.util.List;
 
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import com.vitasync.dto.UpdateUserRequest;
 import com.vitasync.entity.User;
 import com.vitasync.repository.UserRepository;
 
@@ -35,16 +37,29 @@ public class UserService {
         return userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
     }
 
-    public User updateUser(Long id, User userDetails) {
-        User user = getUserById(id);
-        user.setEmail(userDetails.getEmail());
-        user.setPhone(userDetails.getPhone());
-        user.setPassword(userDetails.getPassword());
-        user.setBloodType(userDetails.getBloodType());
-        user.setRole(userDetails.getRole());
-        return userRepository.save(user);
+    public User updateUser(Long id, UpdateUserRequest updateRequest, UserDetails userDetails) {
+        User existingUser = userRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        // Update only the fields that are provided
+        if (updateRequest.getName() != null && !updateRequest.getName().trim().isEmpty()) {
+            existingUser.setName(updateRequest.getName());
+        }
+        if (updateRequest.getPhone() != null && !updateRequest.getPhone().trim().isEmpty()) {
+            existingUser.setPhone(updateRequest.getPhone());
+        }
+        if (updateRequest.getAddress() != null && !updateRequest.getAddress().trim().isEmpty()) {
+            existingUser.setAddress(updateRequest.getAddress());
+        }
+        if (updateRequest.getCity() != null && !updateRequest.getCity().trim().isEmpty()) {
+            existingUser.setCity(updateRequest.getCity());
+        }
+        if (updateRequest.getIsAvailable() != null) {
+            existingUser.setIsAvailable(updateRequest.getIsAvailable());
+        }
+        
+        return userRepository.save(existingUser);
     }
-
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
     }

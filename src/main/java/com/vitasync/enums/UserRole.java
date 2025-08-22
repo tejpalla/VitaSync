@@ -5,7 +5,7 @@ package com.vitasync.enums;
  */
 public enum UserRole {
     DONOR,
-    RECIPIENT,
+    PATIENT,
     ADMIN,
     DOCTOR
 }

@@ -54,12 +54,20 @@ public class TransfusionRequestService {
         matchingService.autoMatchDonors(saved.getId());
 
                // 🔔 send email notification
-        notificationService.sendEmail(
-                patient.getEmail(), // Replace with dto.getPatientEmail()
-                "Transfusion Request Submitted",
-                "Dear " + dto.getPatientName() + 
-                ",\n\nYour transfusion request has been received.\n\n- VitaSync Team"
-        );
+        // notificationService.sendEmail(
+        //         patient.getEmail(), // Replace with dto.getPatientEmail()
+        //         "Transfusion Request Submitted",
+        //         "Dear " + dto.getPatientName() + 
+        //         ",\n\nYour transfusion request has been received.\n\n- VitaSync Team"
+        // );
+        try {
+            // Comment this out for now
+            // notificationService.sendEmail(emailDetails);
+            System.out.println("Email notification would be sent here (disabled for testing)");
+        } catch (Exception e) {
+            // Log but don't fail the request
+            System.err.println("Email notification failed: " + e.getMessage());
+        }
 
         return convertToDto(saved);
     }
