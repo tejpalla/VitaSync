@@ -13,7 +13,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"email\": \"newuser123_4@example.com\",\r\n  \"phone\": \"+701234567340\",\r\n  \"password\": \"SecurePass123\",\r\n  \"bloodType\": \"O_POSITIVE\",\r\n  \"role\": \"DONOR\",\r\n  \"longitude\": 8.6821,\r\n  \"latitude\": 50.1109\r\n}",
+					"raw": "{\r\n  \"name\": \"John Patient\",\r\n  \"email\": \"patient@example.com\",\r\n  \"password\": \"patient123\",\r\n  \"phone\": \"9876543210\",\r\n  \"address\": \"456 Patient Avenue\",\r\n  \"city\": \"Boston\",\r\n  \"bloodType\": \"A_POSITIVE\",\r\n  \"role\": \"PATIENT\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -28,14 +28,28 @@
 			"name": "Login",
 			"request": {
 				"auth": {
-					"type": "inherit",
-					"inherit": {}
+					"type": "jwt",
+					"jwt": {
+						"algorithm": "HS256",
+						"isSecretBase64Encoded": false,
+						"payload": "{}",
+						"addTokenTo": "header",
+						"headerPrefix": "Bearer",
+						"queryParamKey": "token",
+						"header": "{}"
+					}
 				},
 				"method": "POST",
-				"header": [],
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiRE9OT1IiLCJzdWIiOiJqb2huQGV4YW1wbGUuY29tIiwiaWF0IjoxNzU1Nzg3OTY3LCJleHAiOjE3NTU4NzQzNjd9.i3zv57WpJRneQ6mh2t-RSy0IVP5KBBzQA2NJwGK4VQlXrJoc61tyqzG1wCKwdOf_",
+						"type": "text"
+					}
+				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"email\": \"newuser123_4@example.com\",\r\n    \"password\": \"SecurePass123\"\r\n}",
+					"raw": "{\r\n  \"email\": \"patient@example.com\",\r\n  \"password\": \"patient123\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -53,11 +67,11 @@
 				"header": [
 					{
 						"key": "Authorization",
-						"value": "Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJuZXd1c2VyMTIzXzRAZXhhbXBsZS5jb20iLCJpYXQiOjE3NTU1MzcwMzIsImV4cCI6MTc1NTYyMzQzMn0.SdGl7gWj_fFJzjpsdYQoySIpcJWjlct6Pef2lE_0RecGrHHIPZpvV4fPLcn1eMp8",
+						"value": "Bearer eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiQURNSU4iLCJzdWIiOiJhZG1pbkB2aXRhc3luYy5jb20iLCJpYXQiOjE3NTU3ODkyMDUsImV4cCI6MTc1NTg3NTYwNX0.p-sMbapEGLU9jHziab68BYbSbquiPOPz2_sX5nUNDvAgcUi5aZLSolEl4hzFuIO4",
 						"type": "text"
 					}
 				],
-				"url": "http://localhost:8080/api/users/6"
+				"url": "http://localhost:8080/api/users/2"
 			},
 			"response": []
 		},
@@ -68,11 +82,256 @@
 				"header": [
 					{
 						"key": "Authorization",
-						"value": "Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJuZXdBZG1pbl8xMjNAZXhhbXBsZS5jb20iLCJpYXQiOjE3NTU1Mzc1NzIsImV4cCI6MTc1NTYyMzk3Mn0.H--njCQTAmtvaw8K3PjDBU5Cbh_i_mMwCZb5Z7C2Z9ziWK6xykJnpvf7Pzlp77uJ",
+						"value": "Bearer eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiQURNSU4iLCJzdWIiOiJhZG1pbkB2aXRhc3luYy5jb20iLCJpYXQiOjE3NTU3ODkyMDUsImV4cCI6MTc1NTg3NTYwNX0.p-sMbapEGLU9jHziab68BYbSbquiPOPz2_sX5nUNDvAgcUi5aZLSolEl4hzFuIO4",
 						"type": "text"
 					}
 				],
 				"url": "http://localhost:8080/api/users/getall"
+			},
+			"response": []
+		},
+		{
+			"name": "UpdateUser",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiRE9OT1IiLCJzdWIiOiJqb2huQGV4YW1wbGUuY29tIiwiaWF0IjoxNzU1Nzg5MDI2LCJleHAiOjE3NTU4NzU0MjZ9.hTAOyvsCuJxV9Am6q_xiGSaMk2whLnX0Z0vwLFZAGErILnjs9gPYUBZNQl_-kslP",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"name\": \"John Updated\",\r\n  \"phone\": \"9876543210\",\r\n  \"address\": \"456 Updated St\",\r\n  \"city\": \"Boston\",\r\n  \"isAvailable\": true\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8080/api/users/1"
+			},
+			"response": []
+		},
+		{
+			"name": "transfusion-request",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiUEFUSUVOVCIsInN1YiI6InBhdGllbnRAZXhhbXBsZS5jb20iLCJpYXQiOjE3NTU3OTE1MTMsImV4cCI6MTc1NTg3NzkxM30.5FuwajmjdPcBv3BcSJ_mHylpNxn8gyliGA3d85ovApEd2O-kVqeBU-8zYaVfpNZQ",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"patientName\": \"John Emergency Patient\",\r\n  \"bloodType\": \"O_POSITIVE\",\r\n  \"unitsNeeded\": 2,\r\n  \"urgency\": \"HIGH\",\r\n  \"hospitalName\": \"City General Hospital\",\r\n  \"hospitalAddress\": \"123 Hospital St, New York\",\r\n  \"contactNumber\": \"1234567890\",\r\n  \"requiredBy\": \"2025-08-25T10:00:00\",\r\n  \"medicalReason\": \"Surgery preparation\",\r\n  \"doctorName\": \"Dr. Smith\",\r\n  \"patientAge\": 35,\r\n  \"additionalNotes\": \"Patient needs blood for emergency surgery\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/transfusion-requests?patientId=3",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"transfusion-requests"
+					],
+					"query": [
+						{
+							"key": "patientId",
+							"value": "3"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "transfusion-getbyId",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiUEFUSUVOVCIsInN1YiI6InBhdGllbnRAZXhhbXBsZS5jb20iLCJpYXQiOjE3NTU3OTE1MTMsImV4cCI6MTc1NTg3NzkxM30.5FuwajmjdPcBv3BcSJ_mHylpNxn8gyliGA3d85ovApEd2O-kVqeBU-8zYaVfpNZQ",
+						"type": "text"
+					}
+				],
+				"url": "http://localhost:8080/api/transfusion-requests/5"
+			},
+			"response": []
+		},
+		{
+			"name": "Get_all_Requests",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiUEFUSUVOVCIsInN1YiI6InBhdGllbnRAZXhhbXBsZS5jb20iLCJpYXQiOjE3NTU3OTE1MTMsImV4cCI6MTc1NTg3NzkxM30.5FuwajmjdPcBv3BcSJ_mHylpNxn8gyliGA3d85ovApEd2O-kVqeBU-8zYaVfpNZQ",
+						"type": "text"
+					}
+				],
+				"url": "http://localhost:8080/api/transfusion-requests"
+			},
+			"response": []
+		},
+		{
+			"name": "FindingMatch_By-PatientId",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiUEFUSUVOVCIsInN1YiI6InBhdGllbnRAZXhhbXBsZS5jb20iLCJpYXQiOjE3NTU4NDAwMjIsImV4cCI6MTc1NTkyNjQyMn0.OosNUzrWoP3kM3tZ0LH8enhoM-cEUhkLJtSmIM9mZroRlI6BRD68HitY8C7tjNq1",
+						"type": "text"
+					}
+				],
+				"url": "http://localhost:8080/api/matching/donors-for-request/6"
+			},
+			"response": []
+		},
+		{
+			"name": "DonorResponseToRequest",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiUEFUSUVOVCIsInN1YiI6InBhdGllbnRAZXhhbXBsZS5jb20iLCJpYXQiOjE3NTU4NDAwMjIsImV4cCI6MTc1NTkyNjQyMn0.OosNUzrWoP3kM3tZ0LH8enhoM-cEUhkLJtSmIM9mZroRlI6BRD68HitY8C7tjNq1",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"donorId\": 4,\r\n  \"requestId\": 6,\r\n  \"status\": \"INTERESTED\",\r\n  \"message\": \"I am available to donate.\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8080/api/donation-responses"
+			},
+			"response": []
+		},
+		{
+			"name": "GetDonorsReponses",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiUEFUSUVOVCIsInN1YiI6InBhdGllbnRAZXhhbXBsZS5jb20iLCJpYXQiOjE3NTU4NDAwMjIsImV4cCI6MTc1NTkyNjQyMn0.OosNUzrWoP3kM3tZ0LH8enhoM-cEUhkLJtSmIM9mZroRlI6BRD68HitY8C7tjNq1",
+						"type": "text"
+					}
+				],
+				"url": "http://localhost:8080/api/transfusion-requests"
+			},
+			"response": []
+		},
+		{
+			"name": "gettingTransfusionRequestByTransID",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiUEFUSUVOVCIsInN1YiI6InBhdGllbnRAZXhhbXBsZS5jb20iLCJpYXQiOjE3NTU4NDAwMjIsImV4cCI6MTc1NTkyNjQyMn0.OosNUzrWoP3kM3tZ0LH8enhoM-cEUhkLJtSmIM9mZroRlI6BRD68HitY8C7tjNq1",
+						"type": "text"
+					}
+				],
+				"url": "http://localhost:8080/api/donation-responses/request/6"
+			},
+			"response": []
+		},
+		{
+			"name": "UpdateDonoratinStatus",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiUEFUSUVOVCIsInN1YiI6InBhdGllbnRAZXhhbXBsZS5jb20iLCJpYXQiOjE3NTU4NDAwMjIsImV4cCI6MTc1NTkyNjQyMn0.OosNUzrWoP3kM3tZ0LH8enhoM-cEUhkLJtSmIM9mZroRlI6BRD68HitY8C7tjNq1",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/donation-responses/1/status?status=CONFIRMED",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"donation-responses",
+						"1",
+						"status"
+					],
+					"query": [
+						{
+							"key": "status",
+							"value": "CONFIRMED"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Dashboard_Stats",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiUEFUSUVOVCIsInN1YiI6InBhdGllbnRAZXhhbXBsZS5jb20iLCJpYXQiOjE3NTU4NDAwMjIsImV4cCI6MTc1NTkyNjQyMn0.OosNUzrWoP3kM3tZ0LH8enhoM-cEUhkLJtSmIM9mZroRlI6BRD68HitY8C7tjNq1",
+						"type": "text"
+					}
+				],
+				"url": "http://localhost:8080/api/dashboard/stats"
+			},
+			"response": []
+		},
+		{
+			"name": "Dashboard-recent-Activities",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "DashBoard_Urget-requests",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiUEFUSUVOVCIsInN1YiI6InBhdGllbnRAZXhhbXBsZS5jb20iLCJpYXQiOjE3NTU4NDAwMjIsImV4cCI6MTc1NTkyNjQyMn0.OosNUzrWoP3kM3tZ0LH8enhoM-cEUhkLJtSmIM9mZroRlI6BRD68HitY8C7tjNq1",
+						"type": "text"
+					}
+				],
+				"url": "http://localhost:8080/api/dashboard/urgent-requests"
 			},
 			"response": []
 		}
